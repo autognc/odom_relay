@@ -56,20 +56,40 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
   </group>
 
   <!-- - - - - - - - - Reduce frequency of camera pose - - - - - - - -->
-  <node name="reduce_freq_odom" pkg="topic_tools" type="drop" output="log" args="/camera/odom/sample 3 4 /camera/odom/sample_low_freq" />
+  <!-- <node name="reduce_freq_odom" pkg="topic_tools" type="drop" output="log" args="/camera/odom/sample 3 4 /camera/odom/sample_low_freq" /> -->
 
   <!-- - - - - - - - - Relay odometry data to mavros - - - - - - - - -->
-  <node name="relay_odom_lpe" pkg="odom_relay" type="odom_relay_lpe" output="screen" />
+  <node pkg="odom_relay" type="odom_relay_lpe" name="odom_relay_lpe"
+    output="screen">
+
+    <!-- Center of mass position w.r.t. T265 (meters)-->
+    <!-- Positive x: forward in the direction of the camera -->
+    <!-- Positive y: To the left of the camera -->
+    <!-- Positive z: Pointing up in the camera frame -->
+    <param name="COM_x" value="-0.1"/> 
+    <param name="COM_y" value="0.0"/> 
+    <param name="COM_z" value="0.05"/> 
+  </node>
+
 
   <!-- Camera frame w.r.t. board frame -->
   <node name="board_to_cam" pkg="tf" type="static_transform_publisher" output="screen" 
   args="0 0 0 0.70710678118 0.70710678118 0 0 local_origin_ned camera_odom_frame 50"/>
 
+  <!-- Suppress mavros error -->
+  <node name="board_to_fcu" pkg="tf" type="static_transform_publisher" output="screen"
+  args="0 0 0 0 0 0 1 local_origin_ned fcu 50"/>
+
+    <!-- Map frame -->
+    <node name="map_origin" pkg="tf" type="static_transform_publisher" output="screen"
+    args="0 0 0 0 0 0 1 local_origin map 50"/>
+
   <!-- - - - - - - - - - - Launch Mavros - - - - - - - - - - - - - - -->
-  <arg name="fcu_url" default="/dev/ttyS4:921600" />
-  <arg name="gcs_url" default="udp://@192.168.0.135" />
+  <arg name="fcu_url" default="tcp://127.0.0.1:5760" />
+  <arg name="gcs_url" default="udp://127.0.0.1:14558@127.0.0.1:14610" />
   <arg name="tgt_system" default="1" />
   <arg name="tgt_component" default="1" />
+  <!-- <arg name="system_id" default="2" /> -->
   <arg name="log_output" default="screen" />
   <arg name="fcu_protocol" default="v2.0" />
   <arg name="respawn_mavros" default="false" />
@@ -84,6 +104,7 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
     <arg name="tgt_component" value="$(arg tgt_component)" />
     <arg name="log_output" value="$(arg log_output)" />
     <arg name="fcu_protocol" value="$(arg fcu_protocol)" />
+    <!-- <arg name="system_id" value="$(arg system_id)" /> -->
     <arg name="respawn_mavros" default="$(arg respawn_mavros)" />
   </include>
 </launch>
