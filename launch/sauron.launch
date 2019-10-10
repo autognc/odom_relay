@@ -1,0 +1,12 @@
+<launch>
+
+    <arg name="namespace" default="Sauron" />
+
+    <group ns="$(arg namespace)">
+        <include 
+            file="$(find odom_relay)/launch/rs_t265.launch">
+            <arg name="namespace" value="$(arg namespace)" />
+        </include>
+    </group>
+
+</launch>

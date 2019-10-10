@@ -6,6 +6,8 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
 -->
 <launch>
 
+  <arg name="namespace"           default="" />
+
   <!--  - - - - - - - - -Launch realsense camera  - - - - - - - - -->
   <arg name="serial_no"           default=""/>
   <arg name="json_file_path"      default=""/>
@@ -59,20 +61,30 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
   <!-- <node name="reduce_freq_odom" pkg="topic_tools" type="drop" output="log" args="/camera/odom/sample 3 4 /camera/odom/sample_low_freq" /> -->
 
   <!-- - - - - - - - - Relay odometry data to mavros - - - - - - - - -->
+  <arg name="COM_x"           default="-0.1" />
+  <arg name="COM_y"           default="0.0" />
+  <arg name="COM_z"           default="0.0" />
   <node pkg="odom_relay" type="odom_relay_lpe" name="odom_relay_lpe"
     output="screen">
+
+    <!-- Namespace -->
+    <param name="namespace" value="$(arg namespace)"/>
 
     <!-- Center of mass position w.r.t. T265 (meters)-->
     <!-- Positive x: forward in the direction of the camera -->
     <!-- Positive y: To the left of the camera -->
     <!-- Positive z: Pointing up in the camera frame -->
-    <param name="COM_x" value="-0.1"/> 
-    <param name="COM_y" value="0.0"/> 
-    <param name="COM_z" value="0.05"/> 
+    <param name="COM_x" value="$(arg COM_x)"/> 
+    <param name="COM_y" value="$(arg COM_y)"/> 
+    <param name="COM_z" value="$(arg COM_z)"/> 
   </node>
 
+  <!-- Transform from camera to center of mass -->
+  <node name="cam_to_com" pkg="tf" type="static_transform_publisher" output="screen" 
+  args="$(arg COM_x) $(arg COM_y) $(arg COM_z) 0 0 0 1 camera_pose_frame $(arg namespace)/base_link 50"/>
 
   <!-- Camera frame w.r.t. board frame -->
+  <!-- This is the board "fixed frame", assumed to be NED -->
   <node name="board_to_cam" pkg="tf" type="static_transform_publisher" output="screen" 
   args="0 0 0 0.70710678118 0.70710678118 0 0 local_origin_ned camera_odom_frame 50"/>
 
@@ -86,7 +98,7 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
 
   <!-- - - - - - - - - - - Launch Mavros - - - - - - - - - - - - - - -->
   <arg name="fcu_url" default="tcp://127.0.0.1:5760" />
-  <arg name="gcs_url" default="udp://127.0.0.1:14558@127.0.0.1:14610" />
+  <arg name="gcs_url" default="" />
   <arg name="tgt_system" default="1" />
   <arg name="tgt_component" default="1" />
   <!-- <arg name="system_id" default="2" /> -->

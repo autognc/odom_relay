@@ -90,10 +90,23 @@ int main(int argc, char **argv) {
   n.getParam("COM_z", COM_z);
   COM = set_point(COM_x, COM_y, COM_z);
 
+  std::string ns;
+  n.getParam("namespace", ns);
 
-  ros::Subscriber sub = n.subscribe("/camera/odom/sample", 5, odomCallback);
-  pose_pub = n.advertise<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose", 5);
-  odom_pub = n.advertise<nav_msgs::Odometry>("/camera/odom/center_of_mass", 5);
+  std::string in_odom_topic, out_pose_topic, out_odom_com_topic;
+  if (ns.length() > 0) {
+    in_odom_topic = "/" + ns + "/camera/odom/sample";
+    out_pose_topic = "/" + ns + "/mavros/vision_pose/pose";
+    out_odom_com_topic = "/" + ns + "/camera/odom/center_of_mass";
+  } else {
+    in_odom_topic = "/camera/odom/sample";
+    out_pose_topic = "/mavros/vision_pose/pose";
+    out_odom_com_topic = "/camera/odom/center_of_mass";
+  }
+
+  ros::Subscriber sub = n.subscribe(in_odom_topic, 5, odomCallback);
+  pose_pub = n.advertise<geometry_msgs::PoseStamped>(out_pose_topic, 5);
+  odom_pub = n.advertise<nav_msgs::Odometry>(out_odom_com_topic, 5);
   
   ros::spin();
 
