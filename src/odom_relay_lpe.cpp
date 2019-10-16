@@ -95,13 +95,13 @@ int main(int argc, char **argv) {
 
   std::string in_odom_topic, out_pose_topic, out_odom_com_topic;
   if (ns.length() > 0) {
-    in_odom_topic = "/" + ns + "/camera/odom/sample";
+    in_odom_topic = "/" + ns + "/t265/odom/sample";
     out_pose_topic = "/" + ns + "/mavros/vision_pose/pose";
-    out_odom_com_topic = "/" + ns + "/camera/odom/center_of_mass";
+    out_odom_com_topic = "/" + ns + "/t265/odom/center_of_mass";
   } else {
-    in_odom_topic = "/camera/odom/sample";
+    in_odom_topic = "/t265/odom/sample";
     out_pose_topic = "/mavros/vision_pose/pose";
-    out_odom_com_topic = "/camera/odom/center_of_mass";
+    out_odom_com_topic = "/t265/odom/center_of_mass";
   }
 
   ros::Subscriber sub = n.subscribe(in_odom_topic, 5, odomCallback);

@@ -11,7 +11,7 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
   <!--  - - - - - - - - -Launch realsense camera  - - - - - - - - -->
   <arg name="serial_no"           default=""/>
   <arg name="json_file_path"      default=""/>
-  <arg name="camera"              default="camera"/>
+  <arg name="camera"              default="t265"/>
   <arg name="tf_prefix"           default="$(arg camera)"/>
 
   <arg name="fisheye_width"       default="848"/> 
@@ -81,12 +81,12 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
 
   <!-- Transform from camera to center of mass -->
   <node name="cam_to_com" pkg="tf" type="static_transform_publisher" output="screen" 
-  args="$(arg COM_x) $(arg COM_y) $(arg COM_z) 0 0 0 1 camera_pose_frame $(arg namespace)/base_link 50"/>
+  args="$(arg COM_x) $(arg COM_y) $(arg COM_z) 0 0 0 1 $(arg camera)_pose_frame $(arg namespace)/base_link 50"/>
 
   <!-- Camera frame w.r.t. board frame -->
   <!-- This is the board "fixed frame", assumed to be NED -->
   <node name="board_to_cam" pkg="tf" type="static_transform_publisher" output="screen" 
-  args="0 0 0 0.70710678118 0.70710678118 0 0 local_origin_ned camera_odom_frame 50"/>
+  args="0 0 0 0.70710678118 0.70710678118 0 0 local_origin_ned $(arg camera)_odom_frame 50"/>
 
   <!-- Suppress mavros error -->
   <node name="board_to_fcu" pkg="tf" type="static_transform_publisher" output="screen"
