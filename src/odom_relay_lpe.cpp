@@ -10,6 +10,8 @@
 ros::Publisher pose_pub;
 ros::Publisher odom_pub;
 geometry_msgs::Point COM;
+double min_dt_mavros;
+double last_pub_mavros;
 
 geometry_msgs::Point set_point(const double &x, const double &y, const double &z) {
   geometry_msgs::Point v;
@@ -75,8 +77,14 @@ void odomCallback(const nav_msgs::Odometry::ConstPtr& msg) {
   odom.header.frame_id = "local_origin";
   odom.child_frame_id = "com_frame";
 
-  pose_pub.publish(pose);
   odom_pub.publish(odom);
+
+  // Publish in mavros if enough time has passed
+  double dt = msg->header.stamp.toSec() - last_pub_mavros;
+  if (dt > min_dt_mavros) {
+    pose_pub.publish(pose);
+    last_pub_mavros = msg->header.stamp.toSec();
+  }
 }
 
 int main(int argc, char **argv) {
@@ -89,6 +97,12 @@ int main(int argc, char **argv) {
   n.getParam("COM_y", COM_y);
   n.getParam("COM_z", COM_z);
   COM = set_point(COM_x, COM_y, COM_z);
+
+  // Get frequency to publish into mavros
+  double mavros_freq;
+  n.getParam("mavros_freq", mavros_freq);
+  min_dt_mavros = 1.0/mavros_freq;
+  last_pub_mavros = 0.0;
 
   std::string ns;
   n.getParam("namespace", ns);
