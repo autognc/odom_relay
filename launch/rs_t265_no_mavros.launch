@@ -1,0 +1,94 @@
+<!--
+Important Notice: For wheeled robots, odometer input is a requirement for robust
+and accurate tracking. The relevant APIs will be added to librealsense and
+ROS/realsense in upcoming releases. Currently, the API is available in the
+https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/libtm/include/TrackingDevice.h#L508-L515.
+-->
+<launch>
+
+  <arg name="namespace"           default="" />
+
+  <!--  - - - - - - - - -Launch realsense camera  - - - - - - - - -->
+  <arg name="serial_no"           default=""/>
+  <arg name="json_file_path"      default=""/>
+  <arg name="camera"              default="t265"/>
+  <arg name="tf_prefix"           default="$(arg namespace)/$(arg camera)"/>
+
+  <arg name="fisheye_width"       default="848"/> 
+  <arg name="fisheye_height"      default="800"/>
+  <arg name="enable_fisheye1"     default="true"/>
+  <arg name="enable_fisheye2"     default="true"/>
+
+  <arg name="fisheye_fps"         default="30"/>
+
+  <arg name="gyro_fps"            default="200"/>
+  <arg name="accel_fps"           default="62"/>
+  <arg name="enable_gyro"         default="true"/>
+  <arg name="enable_accel"        default="true"/>
+
+  <arg name="enable_sync"           default="false"/>
+
+  <arg name="linear_accel_cov"      default="0.01"/>
+  <arg name="initial_reset"         default="false"/>
+  <arg name="unite_imu_method"      default=""/>
+  
+  <group ns="$(arg camera)">
+    <include file="$(find realsense2_camera)/launch/includes/nodelet.launch.xml">
+      <arg name="tf_prefix"                value="$(arg tf_prefix)"/>
+      <arg name="serial_no"                value="$(arg serial_no)"/>
+      <arg name="json_file_path"           value="$(arg json_file_path)"/>
+
+      <arg name="enable_sync"              value="$(arg enable_sync)"/>
+
+      <arg name="fisheye_width"            value="$(arg fisheye_width)"/>
+      <arg name="fisheye_height"           value="$(arg fisheye_height)"/>
+      <arg name="enable_fisheye1"          value="$(arg enable_fisheye1)"/>
+      <arg name="enable_fisheye2"          value="$(arg enable_fisheye2)"/>
+
+      <arg name="fisheye_fps"              value="$(arg fisheye_fps)"/>
+      <arg name="gyro_fps"                 value="$(arg gyro_fps)"/>
+      <arg name="accel_fps"                value="$(arg accel_fps)"/>
+      <arg name="enable_gyro"              value="$(arg enable_gyro)"/>
+      <arg name="enable_accel"             value="$(arg enable_accel)"/>
+
+      <arg name="linear_accel_cov"         value="$(arg linear_accel_cov)"/>
+      <arg name="initial_reset"            value="$(arg initial_reset)"/>
+      <arg name="unite_imu_method"         value="$(arg unite_imu_method)"/>
+    </include>
+  </group>
+
+  <!-- - - - - - - - - Reduce frequency of camera pose - - - - - - - -->
+  <!-- <node name="reduce_freq_odom" pkg="topic_tools" type="drop" output="log" args="/camera/odom/sample 3 4 /camera/odom/sample_low_freq" /> -->
+
+  <!-- - - - - - - - - Relay odometry data to mavros - - - - - - - - -->
+  <arg name="COM_x"           default="-0.1" />
+  <arg name="COM_y"           default="0.0" />
+  <arg name="COM_z"           default="0.0" />
+  <node pkg="odom_relay" type="odom_relay_lpe" name="odom_relay_lpe"
+    output="screen">
+
+    <!-- Namespace -->
+    <param name="namespace" value="$(arg namespace)"/>
+
+    <!-- Center of mass position w.r.t. T265 (meters)-->
+    <!-- Positive x: forward in the direction of the camera -->
+    <!-- Positive y: To the left of the camera -->
+    <!-- Positive z: Pointing up in the camera frame -->
+    <param name="COM_x" value="$(arg COM_x)"/> 
+    <param name="COM_y" value="$(arg COM_y)"/> 
+    <param name="COM_z" value="$(arg COM_z)"/>
+
+    <!-- Frequency at which we publish to mavros (Hz) -->
+    <param name="mavros_freq" value="50"/>
+  </node>
+
+  <!-- Transform from camera to center of mass -->
+  <node name="cam_to_com" pkg="tf" type="static_transform_publisher" output="screen" 
+  args="$(arg COM_x) $(arg COM_y) $(arg COM_z) 0 0 0 1 $(arg namespace)/$(arg camera)_pose_frame $(arg namespace)/base_link 50"/>
+
+  <!-- Camera frame w.r.t. board frame -->
+  <!-- This is the board "fixed frame", assumed to be NED -->
+  <node name="board_to_cam" pkg="tf" type="static_transform_publisher" output="screen" 
+  args="0 0 0 0.70710678118 0.70710678118 0 0 local_origin_ned $(arg namespace)/$(arg camera)_odom_frame 50"/>
+
+</launch>
