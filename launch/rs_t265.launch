@@ -79,7 +79,7 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
     <param name="COM_z" value="$(arg COM_z)"/>
 
     <!-- Frequency at which we publish to mavros (Hz) -->
-    <param name="mavros_freq" value="40"/>
+    <param name="mavros_freq" value="50"/>
   </node>
 
   <!-- Transform from camera to center of mass -->

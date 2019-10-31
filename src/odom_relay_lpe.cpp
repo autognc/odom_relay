@@ -72,8 +72,8 @@ void odomCallback(const nav_msgs::Odometry::ConstPtr& msg) {
   // Odometry of COM
   nav_msgs::Odometry odom = *msg;
   odom.pose.pose = pose.pose;
-  odom.twist.twist.linear = 
-    velocity_center_of_mass(msg->twist.twist.linear, COM, msg->twist.twist.angular);
+  odom.twist.twist.linear = msg->twist.twist.linear;
+    // velocity_center_of_mass(msg->twist.twist.linear, COM, msg->twist.twist.angular);
   odom.header.frame_id = "local_origin";
   odom.child_frame_id = "com_frame";
 
