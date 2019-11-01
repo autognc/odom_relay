@@ -70,6 +70,9 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
     <!-- Namespace -->
     <param name="namespace" value="$(arg namespace)"/>
 
+    <!-- Camera name -->
+    <param name="camera" value="$(arg camera)"/>
+
     <!-- Center of mass position w.r.t. T265 (meters)-->
     <!-- Positive x: forward in the direction of the camera -->
     <!-- Positive y: To the left of the camera -->
@@ -83,8 +86,8 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
   </node>
 
   <!-- Transform from camera to center of mass -->
-  <node name="cam_to_com" pkg="tf" type="static_transform_publisher" output="screen" 
-  args="$(arg COM_x) $(arg COM_y) $(arg COM_z) 0 0 0 1 $(arg namespace)/$(arg camera)_pose_frame $(arg namespace)/base_link 50"/>
+<!--   <node name="cam_to_com" pkg="tf" type="static_transform_publisher" output="screen" 
+  args="$(arg COM_x) $(arg COM_y) $(arg COM_z) 0 0 0 1 $(arg namespace)/$(arg camera)_pose_frame $(arg namespace)/base_link 50"/> -->
 
   <!-- Camera frame w.r.t. board frame -->
   <!-- This is the board "fixed frame", assumed to be NED -->

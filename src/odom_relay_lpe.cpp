@@ -6,12 +6,17 @@
 #include "nav_msgs/Odometry.h"
 #include "geometry_msgs/PoseStamped.h"
 #include <tf/tf.h>
+#include <thread>
+#include <tf/transform_broadcaster.h>
 
 ros::Publisher pose_pub;
 ros::Publisher odom_pub;
 geometry_msgs::Point COM;
 double min_dt_mavros;
 double last_pub_mavros;
+bool first_pose;
+std::string ns, camera_name;
+std::thread h_init_pose_publisher;
 
 geometry_msgs::Point set_point(const double &x, const double &y, const double &z) {
   geometry_msgs::Point v;
@@ -57,7 +62,39 @@ geometry_msgs::Vector3 velocity_center_of_mass(
   return set_vector3(v_com[0], v_com[1], v_com[2]);
 }
 
+void zero_orientation_tf_publisher(const geometry_msgs::Quaternion &quat) {
+  
+
+  static tf::TransformBroadcaster br;
+  ros::Rate loop_rate(50);
+  std::string frame_id, child_frame_id;
+
+  if (ns.length() > 0) {
+    frame_id = "/" + ns + "/" + camera_name + "_pose_frame";
+    child_frame_id = "/" + ns + "/base_link";
+  } else {
+    frame_id = "/" + camera_name + "_pose_frame";
+    child_frame_id = "/base_link";
+  }
+
+  while (ros::ok()) {
+    tf::Transform transform;
+    transform.setOrigin( tf::Vector3(0.0, 0.0, 0.0) );
+    transform.setRotation(tf::Quaternion(-quat.x, -quat.y, -quat.z, quat.w));
+    br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), frame_id, child_frame_id));
+
+    loop_rate.sleep();
+  }
+}
+
 void odomCallback(const nav_msgs::Odometry::ConstPtr& msg) {
+
+  // Trigger thread if this is first received msg
+  if (first_pose) {
+    h_init_pose_publisher = std::thread(zero_orientation_tf_publisher, msg->pose.pose.orientation);
+    first_pose = false;
+  }
+
   geometry_msgs::PoseStamped pose;
   pose.header = msg->header;
   pose.header.frame_id = "local_origin";
@@ -104,8 +141,12 @@ int main(int argc, char **argv) {
   min_dt_mavros = 1.0/mavros_freq;
   last_pub_mavros = 0.0;
 
-  std::string ns;
+  // Boolean for knowing the first pose received
+  first_pose = true;
+
+  // Get camera and namespace names
   n.getParam("namespace", ns);
+  n.getParam("camera", camera_name);
 
   std::string in_odom_topic, out_pose_topic, out_odom_com_topic;
   if (ns.length() > 0) {
