@@ -17,6 +17,7 @@ double last_pub_mavros;
 bool first_pose;
 std::string ns, camera_name;
 std::thread h_init_pose_publisher;
+geometry_msgs::Quaternion initial_orientation;
 
 geometry_msgs::Point set_point(const double &x, const double &y, const double &z) {
   geometry_msgs::Point v;
@@ -28,6 +29,15 @@ geometry_msgs::Vector3 set_vector3(const double &x, const double &y, const doubl
   geometry_msgs::Vector3 v;
   v.x = x; v.y = y; v.z = z;
   return v;
+}
+
+geometry_msgs::Quaternion set_quat(const double &x, const double &y, const double &z, const double &w) {
+  geometry_msgs::Quaternion quat;
+  quat.x = x;
+  quat.y = y;
+  quat.z = z;
+  quat.w = w;
+  return quat;
 }
 
 geometry_msgs::Point add_point(const geometry_msgs::Point &v1,
@@ -43,6 +53,15 @@ geometry_msgs::Point convert_to_inertial_frame(
   tf::Quaternion q_pt_world = q*q_body*q.inverse();
   geometry_msgs::Point pt_world = set_point(q_pt_world.x(), q_pt_world.y(), q_pt_world.z());
   return pt_world;
+}
+
+geometry_msgs::Quaternion relative_orientation(
+    const geometry_msgs::Quaternion &quat1,
+    const geometry_msgs::Quaternion &quat2) {
+  tf::Quaternion q1(quat1.x, quat1.y, quat1.z, quat1.w);
+  tf::Quaternion q2(quat2.x, quat2.y, quat2.z, quat2.w);
+  tf::Quaternion q = q1*q2.inverse();
+  return set_quat(q.x(), q.y(), q.z(), q.w());
 }
 
 // Here we assume that the velocity is computed in body frame!
@@ -91,18 +110,19 @@ void odomCallback(const nav_msgs::Odometry::ConstPtr& msg) {
 
   // Trigger thread if this is first received msg
   if (first_pose) {
-    h_init_pose_publisher = std::thread(zero_orientation_tf_publisher, msg->pose.pose.orientation);
+    initial_orientation = msg->pose.pose.orientation;
+    h_init_pose_publisher = std::thread(zero_orientation_tf_publisher, initial_orientation);
     first_pose = false;
   }
 
   geometry_msgs::PoseStamped pose;
   pose.header = msg->header;
   pose.header.frame_id = "local_origin";
-  pose.pose.orientation = msg->pose.pose.orientation;
+  const geometry_msgs::Quaternion q_cam = relative_orientation(msg->pose.pose.orientation, initial_orientation);
+  pose.pose.orientation = q_cam;
 
   // Publish pose with added COM
   const geometry_msgs::Point cam_pos = msg->pose.pose.position;
-  const geometry_msgs::Quaternion q_cam = msg->pose.pose.orientation;
   const geometry_msgs::Point cam2com_world = convert_to_inertial_frame(q_cam, COM);
   pose.pose.position = add_point(cam_pos, cam2com_world);
 

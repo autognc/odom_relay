@@ -94,4 +94,8 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
   <node name="board_to_cam" pkg="tf" type="static_transform_publisher" output="screen" 
   args="0 0 0 0.70710678118 0.70710678118 0 0 local_origin_ned $(arg namespace)/$(arg camera)_odom_frame 50"/>
 
+  <!-- T265 to R200 -->
+  <node name="t265_to_R200" pkg="tf" type="static_transform_publisher" output="screen" 
+  args="0 0 0.5 0 0 0 1 $(arg namespace)/$(arg camera)_pose_frame $(arg namespace)/camera_link 50"/>
+
 </launch>
