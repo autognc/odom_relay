@@ -1,0 +1,20 @@
+<launch>
+
+    <arg name="namespace" default="Sauron" />
+
+    <!-- T265 + Mavros -->
+    <include file="$(find odom_relay)/launch/sauron_mavros.launch">
+        <arg name="namespace" value="$(arg namespace)" />
+    </include>
+
+    <!-- R200 -->
+    <include file="$(find realsense2_camera)/launch/r200_nodelet_rgbd.launch">
+        <arg name="namespace" value="$(arg namespace)" />
+    </include>
+
+    <!-- ORB_SLAM2 + Portrait Mode -->
+    <include file="$(find ORB_SLAM2)/launch/rgbd_ns_no_visualization_r200.launch">
+        <arg name="namespace" value="$(arg namespace)" />
+    </include>
+
+</launch>
