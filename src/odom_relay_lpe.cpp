@@ -90,10 +90,10 @@ void zero_orientation_tf_publisher(const geometry_msgs::Quaternion &quat) {
 
   if (ns.length() > 0) {
     frame_id = "/" + ns + "/" + camera_name + "_pose_frame";
-    child_frame_id = "/" + ns + "/base_link";
+    child_frame_id = "/" + ns + "/t265_link";
   } else {
     frame_id = "/" + camera_name + "_pose_frame";
-    child_frame_id = "/base_link";
+    child_frame_id = "/t265_link";
   }
 
   while (ros::ok()) {
