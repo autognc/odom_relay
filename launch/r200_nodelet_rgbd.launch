@@ -119,7 +119,7 @@
         args="color/image_raw 1 2 color/image_raw_low_freq">
     </node>
     <!-- <node pkg="topic_tools" type="drop" name="low_freq_depth"
-        args="depth_registered/image_raw 1 2 depth_registered/image_raw_low_freq">
+        args="depth_registered/image_raw 2 3 depth_registered/image_raw_low_freq">
     </node> -->
 
 

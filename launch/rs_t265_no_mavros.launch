@@ -9,7 +9,7 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
   <arg name="namespace"           default="" />
 
   <!--  - - - - - - - - -Launch realsense camera  - - - - - - - - -->
-  <arg name="serial_no"           default="905312110102"/>
+  <arg name="serial_no"           default=""/>
   <arg name="json_file_path"      default=""/>
   <arg name="camera"              default="t265"/>
   <arg name="tf_prefix"           default="$(arg namespace)/$(arg camera)"/>
@@ -63,7 +63,7 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
   <!-- - - - - - - - - Relay odometry data to mavros - - - - - - - - -->
   <arg name="COM_x"           default="-0.1" />
   <arg name="COM_y"           default="0.0" />
-  <arg name="COM_z"           default="0.0" />
+  <arg name="COM_z"           default="0.05" />
   <node pkg="odom_relay" type="odom_relay_lpe" name="odom_relay_lpe"
     output="screen">
 
@@ -86,8 +86,8 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
   </node>
 
   <!-- Transform from camera to center of mass -->
-<!--   <node name="cam_to_com" pkg="tf" type="static_transform_publisher" output="screen" 
-  args="$(arg COM_x) $(arg COM_y) $(arg COM_z) 0 0 0 1 $(arg namespace)/$(arg camera)_pose_frame $(arg namespace)/base_link 50"/> -->
+  <node name="cam_to_com" pkg="tf" type="static_transform_publisher" output="screen" 
+  args="$(arg COM_x) $(arg COM_y) $(arg COM_z) 0 0 0 1 $(arg namespace)/$(arg camera)_link $(arg namespace)/base_link 50"/>
 
   <!-- Camera frame w.r.t. board frame -->
   <!-- This is the board "fixed frame", assumed to be NED -->
@@ -96,6 +96,6 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
 
   <!-- T265 to R200 -->
   <node name="t265_to_R200" pkg="tf" type="static_transform_publisher" output="screen" 
-  args="0 0 0.5 0 0 0 1 $(arg namespace)/$(arg camera)_pose_frame $(arg namespace)/camera_link 50"/>
+  args="0 0 0.05 0 0 0 1 $(arg namespace)/$(arg camera)_link $(arg namespace)/camera_link 50"/>
 
 </launch>
