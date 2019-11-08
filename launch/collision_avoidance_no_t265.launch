@@ -1,0 +1,15 @@
+<launch>
+
+    <arg name="namespace" default="Sauron" />
+
+    <!-- T265 + Mavros -->
+    <include file="$(find odom_relay)/launch/sauron_mavros.launch">
+        <arg name="namespace" value="$(arg namespace)" />
+    </include>
+
+    <!-- R200 -->
+    <include file="$(find realsense2_camera)/launch/r200_nodelet_rgbd.launch">
+        <arg name="namespace" value="$(arg namespace)" />
+    </include>
+    
+</launch>
