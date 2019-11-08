@@ -9,7 +9,7 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
   <arg name="namespace"           default="" />
 
   <!--  - - - - - - - - -Launch realsense camera  - - - - - - - - -->
-  <arg name="serial_no"           default="905312110102"/>
+  <arg name="serial_no"           default=""/>
   <arg name="json_file_path"      default=""/>
   <arg name="camera"              default="t265"/>
   <arg name="tf_prefix"           default="$(arg namespace)/$(arg camera)"/>
